@@ -2,11 +2,10 @@
 
 namespace Illuminate\Support\Testing\Fakes;
 
-use Illuminate\Queue\QueueManager;
 use Illuminate\Contracts\Queue\Queue;
-use PHPUnit\Framework\Assert as PHPUnit;
+use PHPUnit_Framework_Assert as PHPUnit;
 
-class QueueFake extends QueueManager implements Queue
+class QueueFake implements Queue
 {
     /**
      * All of the jobs that have been pushed.
@@ -45,7 +44,11 @@ class QueueFake extends QueueManager implements Queue
                 return false;
             }
 
-            return $callback ? $callback(...func_get_args()) : true;
+            if ($callback) {
+                return $callback(...func_get_args());
+            }
+
+            return true;
         });
     }
 
@@ -100,7 +103,7 @@ class QueueFake extends QueueManager implements Queue
     /**
      * Resolve a queue connection instance.
      *
-     * @param  mixed  $value
+     * @param  string  $name
      * @return \Illuminate\Contracts\Queue\Queue
      */
     public function connection($value = null)
@@ -129,7 +132,7 @@ class QueueFake extends QueueManager implements Queue
      */
     public function push($job, $data = '', $queue = null)
     {
-        $this->jobs[is_object($job) ? get_class($job) : $job][] = [
+        $this->jobs[get_class($job)][] = [
             'job' => $job,
             'queue' => $queue,
         ];
@@ -198,41 +201,5 @@ class QueueFake extends QueueManager implements Queue
     public function pop($queue = null)
     {
         //
-    }
-
-    /**
-     * Push an array of jobs onto the queue.
-     *
-     * @param  array $jobs
-     * @param  mixed $data
-     * @param  string $queue
-     * @return mixed
-     */
-    public function bulk($jobs, $data = '', $queue = null)
-    {
-        foreach ($this->jobs as $job) {
-            $this->push($job);
-        }
-    }
-
-    /**
-     * Get the connection name for the queue.
-     *
-     * @return string
-     */
-    public function getConnectionName()
-    {
-        //
-    }
-
-    /**
-     * Set the connection name for the queue.
-     *
-     * @param  string $name
-     * @return $this
-     */
-    public function setConnectionName($name)
-    {
-        return $this;
     }
 }

@@ -2,7 +2,6 @@
 
 namespace Illuminate\Http;
 
-use Illuminate\Support\Arr;
 use Illuminate\Container\Container;
 use Illuminate\Support\Traits\Macroable;
 use Illuminate\Contracts\Filesystem\Factory as FilesystemFactory;
@@ -13,41 +12,27 @@ class UploadedFile extends SymfonyUploadedFile
     use FileHelpers, Macroable;
 
     /**
-     * Begin creating a new file fake.
-     *
-     * @return \Illuminate\Http\Testing\FileFactory
-     */
-    public static function fake()
-    {
-        return new Testing\FileFactory;
-    }
-
-    /**
      * Store the uploaded file on a filesystem disk.
      *
      * @param  string  $path
-     * @param  array|string  $options
+     * @param  string|null  $disk
      * @return string|false
      */
-    public function store($path, $options = [])
+    public function store($path, $disk = null)
     {
-        return $this->storeAs($path, $this->hashName(), $this->parseOptions($options));
+        return $this->storeAs($path, $this->hashName(), $disk);
     }
 
     /**
      * Store the uploaded file on a filesystem disk with public visibility.
      *
      * @param  string  $path
-     * @param  array|string  $options
+     * @param  string|null  $disk
      * @return string|false
      */
-    public function storePublicly($path, $options = [])
+    public function storePublicly($path, $disk = null)
     {
-        $options = $this->parseOptions($options);
-
-        $options['visibility'] = 'public';
-
-        return $this->storeAs($path, $this->hashName(), $options);
+        return $this->storeAs($path, $this->hashName(), $disk, 'public');
     }
 
     /**
@@ -55,16 +40,12 @@ class UploadedFile extends SymfonyUploadedFile
      *
      * @param  string  $path
      * @param  string  $name
-     * @param  array|string  $options
+     * @param  string|null  $disk
      * @return string|false
      */
-    public function storePubliclyAs($path, $name, $options = [])
+    public function storePubliclyAs($path, $name, $disk = null)
     {
-        $options = $this->parseOptions($options);
-
-        $options['visibility'] = 'public';
-
-        return $this->storeAs($path, $name, $options);
+        return $this->storeAs($path, $name, $disk, 'public');
     }
 
     /**
@@ -72,18 +53,15 @@ class UploadedFile extends SymfonyUploadedFile
      *
      * @param  string  $path
      * @param  string  $name
-     * @param  array|string  $options
+     * @param  string|null  $disk
+     * @param  string|null  $visibility
      * @return string|false
      */
-    public function storeAs($path, $name, $options = [])
+    public function storeAs($path, $name, $disk = null, $visibility = null)
     {
-        $options = $this->parseOptions($options);
+        $factory = Container::getInstance()->make(FilesystemFactory::class);
 
-        $disk = Arr::pull($options, 'disk');
-
-        return Container::getInstance()->make(FilesystemFactory::class)->disk($disk)->putFileAs(
-            $path, $this, $name, $options
-        );
+        return $factory->disk($disk)->putFileAs($path, $this, $name, $visibility);
     }
 
     /**
@@ -103,20 +81,5 @@ class UploadedFile extends SymfonyUploadedFile
             $file->getError(),
             $test
         );
-    }
-
-    /**
-     * Parse and format the given options.
-     *
-     * @param  array|string  $options
-     * @return array
-     */
-    protected function parseOptions($options)
-    {
-        if (is_string($options)) {
-            $options = ['disk' => $options];
-        }
-
-        return $options;
     }
 }

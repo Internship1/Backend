@@ -2,38 +2,8 @@
 
 namespace Illuminate\Foundation\Testing\Concerns;
 
-use Illuminate\Contracts\Auth\Authenticatable as UserContract;
-
 trait InteractsWithAuthentication
 {
-    /**
-     * Set the currently logged in user for the application.
-     *
-     * @param  \Illuminate\Contracts\Auth\Authenticatable  $user
-     * @param  string|null  $driver
-     * @return $this
-     */
-    public function actingAs(UserContract $user, $driver = null)
-    {
-        $this->be($user, $driver);
-
-        return $this;
-    }
-
-    /**
-     * Set the currently logged in user for the application.
-     *
-     * @param  \Illuminate\Contracts\Auth\Authenticatable  $user
-     * @param  string|null  $driver
-     * @return void
-     */
-    public function be(UserContract $user, $driver = null)
-    {
-        $this->app['auth']->guard($driver)->setUser($user);
-
-        $this->app['auth']->shouldUse($driver);
-    }
-
     /**
      * Assert that the user is authenticated.
      *
@@ -128,7 +98,7 @@ trait InteractsWithAuthentication
     }
 
     /**
-     * Return true if the credentials are valid, false otherwise.
+     * Return true is the credentials are valid, false otherwise.
      *
      * @param  array  $credentials
      * @param  string|null  $guard

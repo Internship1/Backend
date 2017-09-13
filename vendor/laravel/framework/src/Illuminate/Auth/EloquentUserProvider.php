@@ -44,11 +44,7 @@ class EloquentUserProvider implements UserProvider
      */
     public function retrieveById($identifier)
     {
-        $model = $this->createModel();
-
-        return $model->newQuery()
-            ->where($model->getAuthIdentifierName(), $identifier)
-            ->first();
+        return $this->createModel()->newQuery()->find($identifier);
     }
 
     /**
@@ -79,13 +75,7 @@ class EloquentUserProvider implements UserProvider
     {
         $user->setRememberToken($token);
 
-        $timestamps = $user->timestamps;
-
-        $user->timestamps = false;
-
         $user->save();
-
-        $user->timestamps = $timestamps;
     }
 
     /**

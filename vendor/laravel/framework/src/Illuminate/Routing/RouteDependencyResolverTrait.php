@@ -10,6 +10,20 @@ use ReflectionFunctionAbstract;
 trait RouteDependencyResolverTrait
 {
     /**
+     * Call a class method with the resolved dependencies.
+     *
+     * @param  object  $instance
+     * @param  string  $method
+     * @return mixed
+     */
+    protected function callWithDependencies($instance, $method)
+    {
+        return call_user_func_array(
+            [$instance, $method], $this->resolveClassMethodDependencies([], $instance, $method)
+        );
+    }
+
+    /**
      * Resolve the object method's type-hinted dependencies.
      *
      * @param  array  $parameters
@@ -37,22 +51,15 @@ trait RouteDependencyResolverTrait
      */
     public function resolveMethodDependencies(array $parameters, ReflectionFunctionAbstract $reflector)
     {
-        $instanceCount = 0;
-
-        $values = array_values($parameters);
+        $originalParameters = $parameters;
 
         foreach ($reflector->getParameters() as $key => $parameter) {
             $instance = $this->transformDependency(
-                $parameter, $parameters
+                $parameter, $parameters, $originalParameters
             );
 
             if (! is_null($instance)) {
-                $instanceCount++;
-
                 $this->spliceIntoParameters($parameters, $key, $instance);
-            } elseif (! isset($values[$key - $instanceCount]) &&
-                      $parameter->isDefaultValueAvailable()) {
-                $this->spliceIntoParameters($parameters, $key, $parameter->getDefaultValue());
             }
         }
 
@@ -64,9 +71,10 @@ trait RouteDependencyResolverTrait
      *
      * @param  \ReflectionParameter  $parameter
      * @param  array  $parameters
+     * @param  array  $originalParameters
      * @return mixed
      */
-    protected function transformDependency(ReflectionParameter $parameter, $parameters)
+    protected function transformDependency(ReflectionParameter $parameter, $parameters, $originalParameters)
     {
         $class = $parameter->getClass();
 
@@ -96,14 +104,14 @@ trait RouteDependencyResolverTrait
      * Splice the given value into the parameter list.
      *
      * @param  array  $parameters
-     * @param  string  $offset
-     * @param  mixed  $value
+     * @param  string  $key
+     * @param  mixed  $instance
      * @return void
      */
-    protected function spliceIntoParameters(array &$parameters, $offset, $value)
+    protected function spliceIntoParameters(array &$parameters, $key, $instance)
     {
         array_splice(
-            $parameters, $offset, 0, [$value]
+            $parameters, $key, 0, [$instance]
         );
     }
 }

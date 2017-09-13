@@ -34,23 +34,23 @@ class Rule
     /**
      * Get an in constraint builder instance.
      *
-     * @param  array|string  $values
+     * @param  array  $values
      * @return \Illuminate\Validation\Rules\In
      */
-    public static function in($values)
+    public static function in(array $values)
     {
-        return new Rules\In(is_array($values) ? $values : func_get_args());
+        return new Rules\In($values);
     }
 
     /**
      * Get a not_in constraint builder instance.
      *
-     * @param  array|string  $values
+     * @param  array  $values
      * @return \Illuminate\Validation\Rules\NotIn
      */
-    public static function notIn($values)
+    public static function notIn(array $values)
     {
-        return new Rules\NotIn(is_array($values) ? $values : func_get_args());
+        return new Rules\NotIn($values);
     }
 
     /**

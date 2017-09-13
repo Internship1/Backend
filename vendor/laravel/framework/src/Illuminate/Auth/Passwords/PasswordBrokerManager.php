@@ -6,9 +6,6 @@ use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Illuminate\Contracts\Auth\PasswordBrokerFactory as FactoryContract;
 
-/**
- * @mixin \Illuminate\Contracts\Auth\PasswordBroker
- */
 class PasswordBrokerManager implements FactoryContract
 {
     /**
@@ -94,7 +91,6 @@ class PasswordBrokerManager implements FactoryContract
 
         return new DatabaseTokenRepository(
             $this->app['db']->connection($connection),
-            $this->app['hash'],
             $config['table'],
             $key,
             $config['expire']

@@ -11,10 +11,9 @@
 
 namespace Symfony\Component\HttpFoundation\Tests;
 
-use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
-class JsonResponseTest extends TestCase
+class JsonResponseTest extends \PHPUnit_Framework_TestCase
 {
     public function testConstructorEmptyCreatesJsonObject()
     {
@@ -197,12 +196,6 @@ class JsonResponseTest extends TestCase
         $response->setEncodingOptions(JSON_FORCE_OBJECT);
 
         $this->assertEquals('{"0":{"0":1,"1":2,"2":3}}', $response->getContent());
-    }
-
-    public function testItAcceptsJsonAsString()
-    {
-        $response = JsonResponse::fromJsonString('{"foo":"bar"}');
-        $this->assertSame('{"foo":"bar"}', $response->getContent());
     }
 
     /**

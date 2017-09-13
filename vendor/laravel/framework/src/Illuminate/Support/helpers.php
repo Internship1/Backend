@@ -5,7 +5,6 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Debug\Dumper;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Support\HigherOrderTapProxy;
 
 if (! function_exists('append_config')) {
     /**
@@ -245,20 +244,6 @@ if (! function_exists('array_pull')) {
     }
 }
 
-if (! function_exists('array_random')) {
-    /**
-     * Get a random value from an array.
-     *
-     * @param  array  $array
-     * @param  int|null  $num
-     * @return mixed
-     */
-    function array_random($array, $num = null)
-    {
-        return Arr::random($array, $num);
-    }
-}
-
 if (! function_exists('array_set')) {
     /**
      * Set an array item to a given value using "dot" notation.
@@ -278,13 +263,13 @@ if (! function_exists('array_set')) {
 
 if (! function_exists('array_sort')) {
     /**
-     * Sort the array by the given callback or attribute name.
+     * Sort the array using the given callback.
      *
      * @param  array  $array
-     * @param  callable|string  $callback
+     * @param  callable  $callback
      * @return array
      */
-    function array_sort($array, $callback)
+    function array_sort($array, callable $callback)
     {
         return Arr::sort($array, $callback);
     }
@@ -314,19 +299,6 @@ if (! function_exists('array_where')) {
     function array_where($array, callable $callback)
     {
         return Arr::where($array, $callback);
-    }
-}
-
-if (! function_exists('array_wrap')) {
-    /**
-     * If the given value is not an array, wrap it in one.
-     *
-     * @param  mixed  $value
-     * @return array
-     */
-    function array_wrap($value)
-    {
-        return Arr::wrap($value);
     }
 }
 
@@ -521,11 +493,11 @@ if (! function_exists('dd')) {
      * @param  mixed
      * @return void
      */
-    function dd(...$args)
+    function dd()
     {
-        foreach ($args as $x) {
+        array_map(function ($x) {
             (new Dumper)->dump($x);
-        }
+        }, func_get_args());
 
         die(1);
     }
@@ -562,45 +534,6 @@ if (! function_exists('ends_with')) {
     }
 }
 
-if (! function_exists('env')) {
-    /**
-     * Gets the value of an environment variable.
-     *
-     * @param  string  $key
-     * @param  mixed   $default
-     * @return mixed
-     */
-    function env($key, $default = null)
-    {
-        $value = getenv($key);
-
-        if ($value === false) {
-            return value($default);
-        }
-
-        switch (strtolower($value)) {
-            case 'true':
-            case '(true)':
-                return true;
-            case 'false':
-            case '(false)':
-                return false;
-            case 'empty':
-            case '(empty)':
-                return '';
-            case 'null':
-            case '(null)':
-                return;
-        }
-
-        if (strlen($value) > 1 && Str::startsWith($value, '"') && Str::endsWith($value, '"')) {
-            return substr($value, 1, -1);
-        }
-
-        return $value;
-    }
-}
-
 if (! function_exists('head')) {
     /**
      * Get the first element of an array. Useful for method chaining.
@@ -611,19 +544,6 @@ if (! function_exists('head')) {
     function head($array)
     {
         return reset($array);
-    }
-}
-
-if (! function_exists('kebab_case')) {
-    /**
-     * Convert a string to kebab case.
-     *
-     * @param  string  $value
-     * @return string
-     */
-    function kebab_case($value)
-    {
-        return Str::kebab($value);
     }
 }
 
@@ -686,40 +606,6 @@ if (! function_exists('preg_replace_array')) {
     }
 }
 
-if (! function_exists('retry')) {
-    /**
-     * Retry an operation a given number of times.
-     *
-     * @param  int  $times
-     * @param  callable  $callback
-     * @param  int  $sleep
-     * @return mixed
-     *
-     * @throws \Exception
-     */
-    function retry($times, callable $callback, $sleep = 0)
-    {
-        $times--;
-
-        beginning:
-        try {
-            return $callback();
-        } catch (Exception $e) {
-            if (! $times) {
-                throw $e;
-            }
-
-            $times--;
-
-            if ($sleep) {
-                usleep($sleep * 1000);
-            }
-
-            goto beginning;
-        }
-    }
-}
-
 if (! function_exists('snake_case')) {
     /**
      * Convert a string to snake case.
@@ -745,20 +631,6 @@ if (! function_exists('starts_with')) {
     function starts_with($haystack, $needles)
     {
         return Str::startsWith($haystack, $needles);
-    }
-}
-
-if (! function_exists('str_after')) {
-    /**
-     * Return the remainder of a string after a given value.
-     *
-     * @param  string  $subject
-     * @param  string  $search
-     * @return string
-     */
-    function str_after($subject, $search)
-    {
-        return Str::after($subject, $search);
     }
 }
 
@@ -920,20 +792,6 @@ if (! function_exists('str_slug')) {
     }
 }
 
-if (! function_exists('str_start')) {
-    /**
-     * Begin a string with a single instance of a given value.
-     *
-     * @param  string  $value
-     * @param  string  $prefix
-     * @return string
-     */
-    function str_start($value, $prefix)
-    {
-        return Str::start($value, $prefix);
-    }
-}
-
 if (! function_exists('studly_case')) {
     /**
      * Convert a value to studly caps case.
@@ -952,15 +810,11 @@ if (! function_exists('tap')) {
      * Call the given Closure with the given value then return the value.
      *
      * @param  mixed  $value
-     * @param  callable|null  $callback
+     * @param  callable  $callback
      * @return mixed
      */
-    function tap($value, $callback = null)
+    function tap($value, $callback)
     {
-        if (is_null($callback)) {
-            return new HigherOrderTapProxy($value);
-        }
-
         $callback($value);
 
         return $value;
